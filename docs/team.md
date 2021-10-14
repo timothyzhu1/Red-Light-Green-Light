@@ -6,11 +6,11 @@ title:  Team
 # {{ page.title }}
 
 
-## USER 1
-***UCI Net ID***: ucinetid1
+## Amar Sharma
+***UCI Net ID***: amarvs
 
-## USER 2
-***UCI Net ID***: ucinetid2
+## Vikram Miryala
+***UCI Net ID***: vmiryala
 
-## USER 3
-***UCI Net ID***: ucinetid3
+## Timothy Zhu
+***UCI Net ID***: tpzhu
