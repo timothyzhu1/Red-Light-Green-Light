@@ -5,14 +5,16 @@ except:
 
 import time
 
-import samples.malmoutils as malmoutils
+import malmoutils
+
 
 def safeStartMission(agent_host, my_mission, my_client_pool, my_mission_record, role, expId):
     print("Starting Mission {}.".format(role))
     max_retries = 5
     for retry in range(max_retries):
         try:
-            agent_host.startMission(my_mission, my_client_pool, my_mission_record, role, expId)
+            agent_host.startMission(
+                my_mission, my_client_pool, my_mission_record, role, expId)
             break
         except RuntimeError as e:
             if retry == max_retries - 1:
@@ -36,12 +38,25 @@ def safeWaitForStart(agent_hosts):
                 print(e.text)
             exit(1)
         time.sleep(0.1)
-        print(".", end = ' ')
+        print(".", end=' ')
     if time.time() - start_time >= time_out:
         print("Timed out while waiting for mission to start.")
         exit(1)
     print()
     print("Mission has started.")
+
+
+def get_world_path():
+    # Amar
+    # filePath ="\"C:\\malmo\\malmo\\Minecraft\\run\\saves\\CS175Main\""
+    # Tim
+    # filePath = ""
+    # Vik
+    filePath = "\"/Users/vikram/Documents/CS175_malmo/MalmoPlatform/Minecraft/run/saves/CS175world_new\""
+
+    fileWorldGenerator = f"<FileWorldGenerator src ={filePath} />"
+
+    return fileWorldGenerator
 
 
 xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
@@ -57,8 +72,8 @@ xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                     </Time>
                     <Weather>clear</Weather>
                 </ServerInitialConditions>
-                <ServerHandlers>
-                    <FlatWorldGenerator generatorString="3;7,2;1;"/>
+                <ServerHandlers>''' \
+                    + get_world_path() + '''
                     <ServerQuitFromTimeUp description="" timeLimitMs="1000000"/>
                     <ServerQuitWhenAnyAgentFinishes description=""/>
                 </ServerHandlers>
@@ -68,7 +83,10 @@ xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
             <AgentSection mode="Survival">
                 <Name>Testing_Actual</Name>
                 <AgentStart>
-                    <Placement x="5.5" y="2" z="5.5" pitch="0" yaw="90"/>
+                    <Placement x="624.5" y="4" z="825.5" pitch="15" yaw="180"/>
+                    <Inventory>
+                        <InventoryItem slot="0" type="diamond_pickaxe"/>
+                    </Inventory>
                 </AgentStart>
                 <AgentHandlers>
                     <ContinuousMovementCommands/>
@@ -84,10 +102,10 @@ xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
             <AgentSection mode="Survival">
                 <Name>Testing_Dummy</Name>
                 <AgentStart>
-                    <Placement x="0.5" y="2" z="0.5" pitch="0" yaw="0"/>
+                    <Placement x="618.5" y="4" z="763.5" pitch="15" yaw="100"/>
                 </AgentStart>
                 <AgentHandlers>
-                    <AbsoluteMovementCommands/>
+                    <ContinuousMovementCommands/>
                     <AgentQuitFromReachingCommandQuota total="100" />
                 </AgentHandlers>
             </AgentSection>
@@ -98,29 +116,36 @@ Testing_Actual = MalmoPython.AgentHost()
 Testing_Dummy = MalmoPython.AgentHost()
 malmoutils.parse_command_line(Testing_Actual)
 
-my_mission = MalmoPython.MissionSpec(xml,True)
+my_mission = MalmoPython.MissionSpec(xml, True)
 
 client_pool = MalmoPython.ClientPool()
-client_pool.add( MalmoPython.ClientInfo('127.0.0.1',10000) )
-client_pool.add( MalmoPython.ClientInfo('127.0.0.1',10001) )
+client_pool.add(MalmoPython.ClientInfo('127.0.0.1', 10000))
+client_pool.add(MalmoPython.ClientInfo('127.0.0.1', 10001))
 
 actual_recording_spec = MalmoPython.MissionRecordSpec()
 dummy_recording_spec = MalmoPython.MissionRecordSpec()
 
-safeStartMission(Testing_Actual, my_mission, client_pool, actual_recording_spec, 0, '')
-safeStartMission(Testing_Dummy, my_mission, client_pool, dummy_recording_spec, 1, '')
+safeStartMission(Testing_Actual, my_mission, client_pool,
+                 actual_recording_spec, 0, '')
+safeStartMission(Testing_Dummy, my_mission, client_pool,
+                 dummy_recording_spec, 1, '')
 
 safeWaitForStart([Testing_Actual, Testing_Dummy])
 
 while Testing_Actual.peekWorldState().is_mission_running or Testing_Dummy.peekWorldState().is_mission_running:
-    print("moved Forward")
-    Testing_Dummy.sendCommand("tpx 5.5")
-    Testing_Dummy.sendCommand("tpz 5.5")
-    time.sleep(0.5)
-    print("stop")
-    Testing_Dummy.sendCommand("tpx 0.5")
-    Testing_Dummy.sendCommand("tpz 0.5")
-    time.sleep(0.5)
+    pass
+    Testing_Actual.sendCommand("move 1")
+    time.sleep(0.1)
+    Testing_Actual.sendCommand("move 0")
+    time.sleep(2)
+    # print("moved Forward")
+    # Testing_Dummy.sendCommand("tpx 5.5")
+    # Testing_Dummy.sendCommand("tpz 5.5")
+    # time.sleep(0.5)
+    # print("stop")
+    # Testing_Dummy.sendCommand("tpx 0.5")
+    # Testing_Dummy.sendCommand("tpz 0.5")
+    # time.sleep(0.5)
 
 
 print("mission ended")
