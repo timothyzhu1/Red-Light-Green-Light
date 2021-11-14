@@ -5,7 +5,7 @@ except:
 
 import time
 
-import malmoutils
+import samples.malmoutils as malmoutils
 
 def safeStartMission(agent_host, my_mission, my_client_pool, my_mission_record, role, expId):
     print("Starting Mission {}.".format(role))
