@@ -7,11 +7,6 @@ import time
 
 import malmoutils
 
-import random
-
-import _thread
-import numpy as np
-
 
 def safeStartMission(agent_host, my_mission, my_client_pool, my_mission_record, role, expId):
     print("Starting Mission {}.".format(role))
@@ -54,80 +49,14 @@ def safeWaitForStart(agent_hosts):
 def get_world_path():
     # Amar
     # filePath ="\"C:\\malmo\\malmo\\Minecraft\\run\\saves\\CS175Main\""
-    # Tim
+    # Tim 
     # filePath = ""
     # Vik
-    filePath = "\"C:\\Users\\Timothy\\Desktop\\175_test\\redlightgreenlight\\CS175world_new\""
+    filePath = "\"C:\\Desktop\\175_test\\redlightgreenlight\\CS175world_new\""
 
     fileWorldGenerator = f"<FileWorldGenerator src ={filePath} />"
 
     return fileWorldGenerator
-
-def game_runner_threaded(game_runner, game_player):
-    while game_player.peekWorldState().is_mission_running and game_runner.peekWorldState().is_mission_running:
-        timeDiff = random.random() * 4
-        print(timeDiff)
-        game_runner.sendCommand("tpx 618.5")
-        time.sleep(timeDiff)
-        game_runner.sendCommand("tpx 621.5")
-        time.sleep(timeDiff)
-        game_runner.sendCommand("tpx 624.5")
-        time.sleep(timeDiff)
-        game_runner.sendCommand("tpx 627.5")
-        time.sleep(timeDiff)
-        game_runner.sendCommand("tpx 630.5")
-        time.sleep(timeDiff)
-    
-
-
-def get_observation():
-    """
-    Use the agent observation API to get a flattened 2 x 5 x 5 grid around the agent. 
-    The agent is in the center square facing up.
-
-    Args
-        world_state: <object> current agent world state
-
-    Returns
-        observation: <np.array> the state observation
-        allow_break_action: <bool> whether the agent is facing a diamond
-    """
-    obs = np.zeros((60*60 ))
-    world_state = Game_Player.getWorldState()
-    while world_state.is_mission_running:
-        time.sleep(0.1)
-        world_state = Game_Player.getWorldState()
-        if len(world_state.errors) > 0:
-            raise AssertionError('Could not load grid.')
-
-        if world_state.number_of_observations_since_last_state > 0:
-            print("hello")
-
-            msg = world_state.observations[-1].text
-            # observations = json.loads(msg)
-
-            # Get observation
-            # grid = observations['floorAll']
-            print(msg)
-            # for i, x in enumerate(grid):
-            #     obs[i] = x == 'diamond_ore' or x == 'lava'
-
-            # # Rotate observation with orientation of agent
-            # obs = obs.reshape((2, self.obs_size, self.obs_size))
-            # yaw = observations['Yaw']
-            # if yaw >= 225 and yaw < 315:
-            #     obs = np.rot90(obs, k=1, axes=(1, 2))
-            # elif yaw >= 315 or yaw < 45:
-            #     obs = np.rot90(obs, k=2, axes=(1, 2))
-            # elif yaw >= 45 and yaw < 135:
-            #     obs = np.rot90(obs, k=3, axes=(1, 2))
-            # obs = obs.flatten()
-
-        
-        break
-
-    return obs
-
 
 
 xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
@@ -152,7 +81,7 @@ xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 
 
             <AgentSection mode="Survival">
-                <Name>Game_Player</Name>
+                <Name>Testing_Actual</Name>
                 <AgentStart>
                     <Placement x="624.5" y="4" z="825.5" pitch="15" yaw="180"/>
                     <Inventory>
@@ -160,14 +89,6 @@ xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                     </Inventory>
                 </AgentStart>
                 <AgentHandlers>
-                    <ObservationFromFullStats/>
-                    <ObservationFromRay/>
-                    <ObservationFromGrid>
-                        <Grid name="floorAll">
-                            <min x="-'''+str(int(60/2))+'''" y="-1" z="-'''+str(int(60/2))+'''"/>
-                            <max x="'''+str(int(60/2))+'''" y="5" z="'''+str(int(60/2))+'''"/>
-                        </Grid>
-                    </ObservationFromGrid>
                     <ContinuousMovementCommands/>
                     <VideoProducer>
                         <Width>860</Width>
@@ -179,21 +100,21 @@ xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 
 
             <AgentSection mode="Survival">
-                <Name>Game_Runner</Name>
+                <Name>Testing_Dummy</Name>
                 <AgentStart>
                     <Placement x="618.5" y="4" z="763.5" pitch="15" yaw="100"/>
                 </AgentStart>
                 <AgentHandlers>
-                    <AbsoluteMovementCommands/>
+                    <ContinuousMovementCommands/>
                     <AgentQuitFromReachingCommandQuota total="100" />
                 </AgentHandlers>
             </AgentSection>
             
         </Mission>'''
 
-Game_Player = MalmoPython.AgentHost()
-Game_Runner = MalmoPython.AgentHost()
-malmoutils.parse_command_line(Game_Player)
+Testing_Actual = MalmoPython.AgentHost()
+Testing_Dummy = MalmoPython.AgentHost()
+malmoutils.parse_command_line(Testing_Actual)
 
 my_mission = MalmoPython.MissionSpec(xml, True)
 
@@ -204,21 +125,19 @@ client_pool.add(MalmoPython.ClientInfo('127.0.0.1', 10001))
 actual_recording_spec = MalmoPython.MissionRecordSpec()
 dummy_recording_spec = MalmoPython.MissionRecordSpec()
 
-safeStartMission(Game_Player, my_mission, client_pool,
+safeStartMission(Testing_Actual, my_mission, client_pool,
                  actual_recording_spec, 0, '')
-safeStartMission(Game_Runner, my_mission, client_pool,
+safeStartMission(Testing_Dummy, my_mission, client_pool,
                  dummy_recording_spec, 1, '')
 
-safeWaitForStart([Game_Player, Game_Runner])
+safeWaitForStart([Testing_Actual, Testing_Dummy])
 
-_thread.start_new_thread(game_runner_threaded, (Game_Runner, Game_Player))
-
-while Game_Player.peekWorldState().is_mission_running and Game_Runner.peekWorldState().is_mission_running:
-    Game_Player.sendCommand("move 1")
+while Testing_Actual.peekWorldState().is_mission_running or Testing_Dummy.peekWorldState().is_mission_running:
+    pass
+    Testing_Actual.sendCommand("move 1")
     time.sleep(0.1)
-    Game_Player.sendCommand("move 0")
+    Testing_Actual.sendCommand("move 0")
     time.sleep(2)
-    get_observation()
     # print("moved Forward")
     # Testing_Dummy.sendCommand("tpx 5.5")
     # Testing_Dummy.sendCommand("tpz 5.5")
