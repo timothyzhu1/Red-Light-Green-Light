@@ -67,7 +67,6 @@ def get_world_path():
 def game_runner_threaded(game_runner, game_player):
     while game_player.peekWorldState().is_mission_running and game_runner.peekWorldState().is_mission_running:
         timeDiff = 0.5 + random.random() * 1.5
-        # print(timeDiff)
         game_runner.sendCommand("tpx 618.5")
         time.sleep(timeDiff)
         game_runner.sendCommand("tpx 621.5")
@@ -94,7 +93,7 @@ def get_observation():
         observation: <np.array> the state observation
         allow_break_action: <bool> whether the agent is facing a diamond
     """
-    obs = np.zeros((60*60 ))
+    obs = np.zeros((8* 60 * 60))
     world_state = Game_Player.getWorldState()
     while world_state.is_mission_running:
         time.sleep(0.1)
@@ -109,12 +108,12 @@ def get_observation():
 
             # Get observation
             grid = observations['floorAll']
-            print("grid =", grid[0])
+            print("grid =", len(grid))
             # print(grid)
-            # blockTypes = {}
-            # for i, x in enumerate(grid):
-            #     blockTypes[x] = True
-            # print(blockTypes.keys())
+            blockTypes = {}
+            for i, x in enumerate(grid):
+                blockTypes[x] = True
+            print(blockTypes.keys())
             # for i, x in enumerate(grid):
             #     obs[i] = x == 'diamond_ore' or x == 'lava'
 
@@ -170,8 +169,8 @@ xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                     <ObservationFromRay/>
                     <ObservationFromGrid>
                         <Grid name="floorAll">
-                            <min x="-'''+str(int(7))+'''" y="-1" z="-'''+str(int(60))+'''"/>
-                            <max x="'''+str(int(7))+'''" y="7" z="'''+str(int(0))+'''"/>
+                            <min x="-'''+str(int(30))+'''" y="-1" z="-'''+str(int(60))+'''"/>
+                            <max x="'''+str(int(30))+'''" y="7" z="'''+str(int(0))+'''"/>
                         </Grid>
                     </ObservationFromGrid>
                     <ContinuousMovementCommands/>
