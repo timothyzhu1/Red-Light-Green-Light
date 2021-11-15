@@ -58,7 +58,8 @@ def get_world_path():
     # filePath = ""
     # Vik
     # filePath = "\"C:\\Users\\Timothy\\Desktop\\175_test\\redlightgreenlight\\CS175world_new\""
-    filePath = "\"/Users/vikram/Documents/CS175_malmo/MalmoPlatform/Minecraft/run/saves/CS175world_new\""
+    # filePath = "\"/Users/vikram/Documents/CS175_malmo/MalmoPlatform/Minecraft/run/saves/CS175world_new\""
+    filePath = "\"/home/vikram/Desktop/uci_stuff/fourth_year/CS_175/MalmoPlatform/Minecraft/run/saves/CS175world_new\""
 
     fileWorldGenerator = f"<FileWorldGenerator src ={filePath} />"
 
@@ -93,7 +94,7 @@ def get_observation():
         observation: <np.array> the state observation
         allow_break_action: <bool> whether the agent is facing a diamond
     """
-    obs = np.zeros((8* 60 * 60))
+    obs = np.zeros((5 * 60 * 60), dtype = int)
     world_state = Game_Player.getWorldState()
     while world_state.is_mission_running:
         time.sleep(0.1)
@@ -108,14 +109,35 @@ def get_observation():
 
             # Get observation
             grid = observations['floorAll']
-            print("grid =", len(grid))
+            # print("grid =", len(grid))
             # print(grid)
             blockTypes = {}
             for i, x in enumerate(grid):
                 blockTypes[x] = True
             print(blockTypes.keys())
-            # for i, x in enumerate(grid):
-            #     obs[i] = x == 'diamond_ore' or x == 'lava'
+            for i, x in enumerate(grid):
+                if x == 'lit_redstone_lamp':
+                    obs[i] = 1
+                elif x == 'redstone_lamp':
+                    obs[i] = -1
+            index_minus = np.argwhere(obs == -1)
+            index_minus = index_minus[-1] if len(index_minus) >= 1 else -1
+            index_pos = np.argwhere(obs == 1)
+            index_pos = index_pos[-1] if len(index_pos) >= 1 else -1
+            maxIndex = max(index_minus, index_pos)
+            val = obs[maxIndex]
+            obs[maxIndex] = -2 if val == -1 else 2
+            # obs = obs.reshape((5, 60, 60))
+
+            
+            # x,y,z = obs.shape
+            # for i in range(x):
+            #     print('floor = ', i - 1)
+            #     for j in range(y):
+            #         for k in range(z):
+            #             print(obs[i,j,k], end = ' ')
+            #         print('')
+            #     print("\n\n")
 
             # # Rotate observation with orientation of agent
             # obs = obs.reshape((2, self.obs_size, self.obs_size))
@@ -133,6 +155,17 @@ def get_observation():
 
     return obs
 
+def get_all_movement_reward_locations():
+    out = "<RewardForReachingPosition>"
+    i = 826.5
+    while (i >= 777.5):
+        out +=  '''
+                    <Marker x="624.5" y="4" z="''' + str(i) + '''" reward = "1" tolerance="0.25" />
+                '''
+        i -= 1
+    out += '\n</RewardForReachingPosition>'
+    # print(out)
+    return out
 
 
 xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
@@ -157,11 +190,11 @@ xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 
 
             <AgentSection mode="Survival">
-                <Name>Game_Player</Name>
+                <Name>CS175_project</Name>
                 <AgentStart>
                     <Placement x="624.5" y="4" z="825.5" pitch="15" yaw="180"/>
                     <Inventory>
-                        <InventoryItem slot="0" type="diamond_pickaxe"/>
+                        <InventoryItem slot="0" type="map"/>
                     </Inventory>
                 </AgentStart>
                 <AgentHandlers>
@@ -170,9 +203,16 @@ xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                     <ObservationFromGrid>
                         <Grid name="floorAll">
                             <min x="-'''+str(int(30))+'''" y="-1" z="-'''+str(int(60))+'''"/>
-                            <max x="'''+str(int(30))+'''" y="7" z="'''+str(int(0))+'''"/>
+                            <max x="'''+str(int(30))+'''" y="4" z="'''+str(int(0))+'''"/>
                         </Grid>
                     </ObservationFromGrid>
+                    <RewardForTouchingBlockType>
+                        <Block reward="100" type="iron_block" /> 
+                    </RewardForTouchingBlockType>''' \
+                    + get_all_movement_reward_locations() + '''
+                    <AgentQuitFromTouchingBlockType>
+                        <Block type="iron_block" />
+                    </AgentQuitFromTouchingBlockType>
                     <ContinuousMovementCommands/>
                     <VideoProducer>
                         <Width>860</Width>
@@ -181,7 +221,6 @@ xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                     <AgentQuitFromReachingCommandQuota total="100" />
                 </AgentHandlers>
             </AgentSection>
-
 
             <AgentSection mode="Survival">
                 <Name>Game_Runner</Name>
@@ -192,7 +231,6 @@ xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                     <AbsoluteMovementCommands/>
                 </AgentHandlers>
             </AgentSection>
-            
         </Mission>'''
 
 Game_Player = MalmoPython.AgentHost()
@@ -218,8 +256,8 @@ safeWaitForStart([Game_Player, Game_Runner])
 _thread.start_new_thread(game_runner_threaded, (Game_Runner, Game_Player))
 
 while Game_Player.peekWorldState().is_mission_running and Game_Runner.peekWorldState().is_mission_running:
-    # Game_Player.sendCommand("move 1")
-    # time.sleep(0.5)
+    Game_Player.sendCommand("move 1")
+    time.sleep(5)
     Game_Player.sendCommand("move 0")
     time.sleep(2)
     get_observation()
