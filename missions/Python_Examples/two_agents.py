@@ -7,6 +7,9 @@ import time
 
 import malmoutils
 
+import random
+
+import _thread
 
 def safeStartMission(agent_host, my_mission, my_client_pool, my_mission_record, role, expId):
     print("Starting Mission {}.".format(role))
@@ -58,6 +61,24 @@ def get_world_path():
 
     return fileWorldGenerator
 
+def game_runner_threaded(game_runner, game_player):
+    while game_player.peekWorldState().is_mission_running and game_runner.peekWorldState().is_mission_running:
+        timeDiff = random.random() * 4
+        print(timeDiff)
+        game_runner.sendCommand("tpx 618.5")
+        time.sleep(timeDiff)
+        game_runner.sendCommand("tpx 621.5")
+        time.sleep(timeDiff)
+        game_runner.sendCommand("tpx 624.5")
+        time.sleep(timeDiff)
+        game_runner.sendCommand("tpx 627.5")
+        time.sleep(timeDiff)
+        game_runner.sendCommand("tpx 630.5")
+        time.sleep(timeDiff)
+    
+
+
+
 
 xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
         <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -81,7 +102,7 @@ xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 
 
             <AgentSection mode="Survival">
-                <Name>Testing_Actual</Name>
+                <Name>Game_Player</Name>
                 <AgentStart>
                     <Placement x="624.5" y="4" z="825.5" pitch="15" yaw="180"/>
                     <Inventory>
@@ -100,21 +121,21 @@ xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 
 
             <AgentSection mode="Survival">
-                <Name>Testing_Dummy</Name>
+                <Name>Game_Runner</Name>
                 <AgentStart>
                     <Placement x="618.5" y="4" z="763.5" pitch="15" yaw="100"/>
                 </AgentStart>
                 <AgentHandlers>
-                    <ContinuousMovementCommands/>
+                    <AbsoluteMovementCommands/>
                     <AgentQuitFromReachingCommandQuota total="100" />
                 </AgentHandlers>
             </AgentSection>
             
         </Mission>'''
 
-Testing_Actual = MalmoPython.AgentHost()
-Testing_Dummy = MalmoPython.AgentHost()
-malmoutils.parse_command_line(Testing_Actual)
+Game_Player = MalmoPython.AgentHost()
+Game_Runner = MalmoPython.AgentHost()
+malmoutils.parse_command_line(Game_Player)
 
 my_mission = MalmoPython.MissionSpec(xml, True)
 
@@ -125,18 +146,19 @@ client_pool.add(MalmoPython.ClientInfo('127.0.0.1', 10001))
 actual_recording_spec = MalmoPython.MissionRecordSpec()
 dummy_recording_spec = MalmoPython.MissionRecordSpec()
 
-safeStartMission(Testing_Actual, my_mission, client_pool,
+safeStartMission(Game_Player, my_mission, client_pool,
                  actual_recording_spec, 0, '')
-safeStartMission(Testing_Dummy, my_mission, client_pool,
+safeStartMission(Game_Runner, my_mission, client_pool,
                  dummy_recording_spec, 1, '')
 
-safeWaitForStart([Testing_Actual, Testing_Dummy])
+safeWaitForStart([Game_Player, Game_Runner])
 
-while Testing_Actual.peekWorldState().is_mission_running or Testing_Dummy.peekWorldState().is_mission_running:
-    pass
-    Testing_Actual.sendCommand("move 1")
+_thread.start_new_thread(game_runner_threaded, (Game_Runner, Game_Player))
+
+while Game_Player.peekWorldState().is_mission_running and Game_Runner.peekWorldState().is_mission_running:
+    Game_Player.sendCommand("move 1")
     time.sleep(0.1)
-    Testing_Actual.sendCommand("move 0")
+    Game_Player.sendCommand("move 0")
     time.sleep(2)
     # print("moved Forward")
     # Testing_Dummy.sendCommand("tpx 5.5")
