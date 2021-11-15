@@ -11,7 +11,7 @@ import random
 
 import _thread
 import numpy as np
-
+import json
 
 def safeStartMission(agent_host, my_mission, my_client_pool, my_mission_record, role, expId):
     print("Starting Mission {}.".format(role))
@@ -57,7 +57,8 @@ def get_world_path():
     # Tim
     # filePath = ""
     # Vik
-    filePath = "\"C:\\Users\\Timothy\\Desktop\\175_test\\redlightgreenlight\\CS175world_new\""
+    # filePath = "\"C:\\Users\\Timothy\\Desktop\\175_test\\redlightgreenlight\\CS175world_new\""
+    filePath = "\"/Users/vikram/Documents/CS175_malmo/MalmoPlatform/Minecraft/run/saves/CS175world_new\""
 
     fileWorldGenerator = f"<FileWorldGenerator src ={filePath} />"
 
@@ -65,8 +66,8 @@ def get_world_path():
 
 def game_runner_threaded(game_runner, game_player):
     while game_player.peekWorldState().is_mission_running and game_runner.peekWorldState().is_mission_running:
-        timeDiff = random.random() * 4
-        print(timeDiff)
+        timeDiff = 0.5 + random.random() * 1.5
+        # print(timeDiff)
         game_runner.sendCommand("tpx 618.5")
         time.sleep(timeDiff)
         game_runner.sendCommand("tpx 621.5")
@@ -77,7 +78,8 @@ def game_runner_threaded(game_runner, game_player):
         time.sleep(timeDiff)
         game_runner.sendCommand("tpx 630.5")
         time.sleep(timeDiff)
-    
+        game_runner.sendCommand("tpx 615.5")
+        time.sleep(1 + random.random() * 4)
 
 
 def get_observation():
@@ -101,14 +103,18 @@ def get_observation():
             raise AssertionError('Could not load grid.')
 
         if world_state.number_of_observations_since_last_state > 0:
-            print("hello")
 
             msg = world_state.observations[-1].text
-            # observations = json.loads(msg)
+            observations = json.loads(msg)
 
             # Get observation
-            # grid = observations['floorAll']
-            print(msg)
+            grid = observations['floorAll']
+            print("grid =", grid[0])
+            # print(grid)
+            # blockTypes = {}
+            # for i, x in enumerate(grid):
+            #     blockTypes[x] = True
+            # print(blockTypes.keys())
             # for i, x in enumerate(grid):
             #     obs[i] = x == 'diamond_ore' or x == 'lava'
 
@@ -164,8 +170,8 @@ xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                     <ObservationFromRay/>
                     <ObservationFromGrid>
                         <Grid name="floorAll">
-                            <min x="-'''+str(int(60/2))+'''" y="-1" z="-'''+str(int(60/2))+'''"/>
-                            <max x="'''+str(int(60/2))+'''" y="5" z="'''+str(int(60/2))+'''"/>
+                            <min x="-'''+str(int(7))+'''" y="-1" z="-'''+str(int(60))+'''"/>
+                            <max x="'''+str(int(7))+'''" y="7" z="'''+str(int(0))+'''"/>
                         </Grid>
                     </ObservationFromGrid>
                     <ContinuousMovementCommands/>
@@ -185,7 +191,6 @@ xml = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                 </AgentStart>
                 <AgentHandlers>
                     <AbsoluteMovementCommands/>
-                    <AgentQuitFromReachingCommandQuota total="100" />
                 </AgentHandlers>
             </AgentSection>
             
@@ -214,8 +219,8 @@ safeWaitForStart([Game_Player, Game_Runner])
 _thread.start_new_thread(game_runner_threaded, (Game_Runner, Game_Player))
 
 while Game_Player.peekWorldState().is_mission_running and Game_Runner.peekWorldState().is_mission_running:
-    Game_Player.sendCommand("move 1")
-    time.sleep(0.1)
+    # Game_Player.sendCommand("move 1")
+    # time.sleep(0.5)
     Game_Player.sendCommand("move 0")
     time.sleep(2)
     get_observation()
