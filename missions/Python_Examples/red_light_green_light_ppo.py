@@ -78,7 +78,7 @@ class RedLightGreenLightGame(gym.Env):
         tpval = [618.5, 621.5, 624.5, 627.5, 630.5, 615.5]
         while self.Game_Player.peekWorldState().is_mission_running and self.Game_Runner.peekWorldState().is_mission_running:
             i = 0
-            timeDiff = 0.5 + random.random() * 1.5
+            timeDiff = 1 + random.random() * 2
             while self.Game_Player.peekWorldState().is_mission_running and self.Game_Runner.peekWorldState().is_mission_running and i < len(tpval):
                 time.sleep(timeDiff)
                 self.Game_Runner.sendCommand(f"tpx {str(tpval[i])}")

@@ -78,7 +78,7 @@ class RedLightGreenLightGame(gym.Env):
         tpval = [618.5, 621.5, 624.5, 627.5, 630.5, 615.5]
         while self.Game_Player.peekWorldState().is_mission_running and self.Game_Runner.peekWorldState().is_mission_running:
             i = 0
-            timeDiff = 0.5 + random.random() * 1.5
+            timeDiff = 1 + random.random() * 2
             while self.Game_Player.peekWorldState().is_mission_running and self.Game_Runner.peekWorldState().is_mission_running and i < len(tpval):
                 time.sleep(timeDiff)
                 self.Game_Runner.sendCommand(f"tpx {str(tpval[i])}")
@@ -119,7 +119,7 @@ class RedLightGreenLightGame(gym.Env):
         if (len(np.argwhere(self.obs == 2)) >= 1) and self.currVelo != 0:
             print("velo =", self.currVelo)
             done = True
-            self.episode_return -= 200
+            self.episode_return -= 10
             self.Game_Runner.sendCommand("tpx 652.5")
             self.Game_Runner.sendCommand("tpy 4")
             self.Game_Runner.sendCommand("tpz 777.5")
@@ -349,18 +349,24 @@ class RedLightGreenLightGame(gym.Env):
         plt.title('Red Light Green Light Game')
         plt.ylabel('Return')
         plt.xlabel('Steps')
-        plt.savefig('returns_impala_torch.png')
+        plt.savefig('returns_impala_tf_1.png')
 
-        with open('returns_impala_torch.txt', 'w') as f:
+        with open('returns_impala_tf_1.txt', 'w') as f:
             for step, value in zip(self.steps[1:], self.returns[1:]):
                 f.write("{}\t{}\n".format(step, value)) 
 
 if __name__ == '__main__':
     ray.init()
+    # trainer_dreamer = dreamer.DREAMERTrainer(env=RedLightGreenLightGame, config={
+    #     'env_config': {},           # No environment parameters to configure
+    #     'framework': 'torch',       # Use pyotrch instead of tensorflow
+    #     'num_gpus': 0,              # We aren't using GPUs
+    #     'num_workers': 0            # We aren't using parallelism
+    # })
     trainer_impala = impala.ImpalaTrainer(env=RedLightGreenLightGame, config={
         'env_config': {},           # No environment parameters to configure
-        'framework': 'torch',       # Use pyotrch instead of tensorflow
-        'num_gpus': 1,              # We aren't using GPUs
+        'framework': 'tf',       # Use pyotrch instead of tensorflow
+        'num_gpus': 0,              # We aren't using GPUs
         'num_workers': 0            # We aren't using parallelism
     })
     # trainer = ppo.PPOTrainer(env=RedLightGreenLightGame, config={
