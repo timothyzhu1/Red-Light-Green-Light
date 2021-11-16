@@ -269,8 +269,8 @@ class RedLightGreenLightGame(gym.Env):
         my_mission.setViewpoint(1)
 
         client_pool = MalmoPython.ClientPool()
-        client_pool.add(MalmoPython.ClientInfo('127.0.0.1', 10000))
-        client_pool.add(MalmoPython.ClientInfo('127.0.0.1', 10001))
+        client_pool.add(MalmoPython.ClientInfo('127.0.0.1', 10002))
+        client_pool.add(MalmoPython.ClientInfo('127.0.0.1', 10003))
         self.safeStartMission(self.Game_Player, my_mission, client_pool,
                  player_recording_spec, 0, '')
         self.safeStartMission(self.Game_Runner, my_mission, client_pool,
@@ -349,27 +349,27 @@ class RedLightGreenLightGame(gym.Env):
         plt.title('Red Light Green Light Game')
         plt.ylabel('Return')
         plt.xlabel('Steps')
-        plt.savefig('returns_impala_torch.png')
+        plt.savefig('returns_ppo_torch.png')
 
-        with open('returns_impala_torch.txt', 'w') as f:
+        with open('returns_ppo_torch.txt', 'w') as f:
             for step, value in zip(self.steps[1:], self.returns[1:]):
                 f.write("{}\t{}\n".format(step, value)) 
 
 if __name__ == '__main__':
     ray.init()
-    trainer_impala = impala.ImpalaTrainer(env=RedLightGreenLightGame, config={
+    # trainer_impala = impala.ImpalaTrainer(env=RedLightGreenLightGame, config={
+    #     'env_config': {},           # No environment parameters to configure
+    #     'framework': 'tf',       # Use pyotrch instead of tensorflow
+    #     'num_gpus': 1,              # We aren't using GPUs
+    #     'num_workers': 0            # We aren't using parallelism
+    # })
+    trainer_ppo = ppo.PPOTrainer(env=RedLightGreenLightGame, config={
         'env_config': {},           # No environment parameters to configure
         'framework': 'torch',       # Use pyotrch instead of tensorflow
         'num_gpus': 1,              # We aren't using GPUs
         'num_workers': 0            # We aren't using parallelism
     })
-    # trainer = ppo.PPOTrainer(env=RedLightGreenLightGame, config={
-    #     'env_config': {},           # No environment parameters to configure
-    #     'framework': 'torch',       # Use pyotrch instead of tensorflow
-    #     'num_gpus': 1,              # We aren't using GPUs
-    #     'num_workers': 0            # We aren't using parallelism
-    # })
 
     while True:
-        print(trainer_impala.train())
+        print(trainer_ppo.train())
         
