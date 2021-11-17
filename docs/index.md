@@ -22,6 +22,16 @@ Our project is based on the game, Red Light Green Light, depicted in the popular
 
 ## Gallery
 
+![arena](./images/arena.png)
+![arena2](./images/arena2.png)
+![finish line](./images/finishline.png)
+![gamerunner](./images/gamerunner.png)
+![lights](./images/lights.png)
+![light switches](./images/lightswitches.png)
+![finished](./images/finished.png)
+
+
+
 
 
 ## Relevant Resources Used
