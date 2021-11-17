@@ -22,7 +22,7 @@ Our project is based on the game, Red Light Green Light, depicted in the popular
 
 ## Gallery
 
-![arena](./images/arena.png)
+<img src="./images/arena.png" alt="arena" width="200"/>
 ![arena2](./images/arena2.png)
 ![finish line](./images/finishline.png)
 ![gamerunner](./images/gamerunner.png)
