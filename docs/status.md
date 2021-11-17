@@ -17,6 +17,7 @@ Currently, our methods of evaluation consist of the agent's performance based on
 <img src="./images/returns_ppo_tf.png" alt="ppo" width="400"/>
 
 PPO Algorithm
+
 <img src="./images/returns_impala_tf.png" alt="impala" width="400"/>
 
 IMPALA Algorithm
@@ -24,6 +25,7 @@ IMPALA Algorithm
 <img src="./images/returns_impala_tf_1.png" alt="impala1" width="400"/>
 
 Another Iteration of the IMPALA Algorithm
+
 
 
 
