@@ -23,18 +23,31 @@ Our project is based on the game, Red Light Green Light, depicted in the popular
 ## Gallery
 
 <img src="./images/arena.png" alt="arena" width="400"/>
+
 Arena
+
 <img src="./images/arena2.png" alt="arena2" width="400"/>
+
 Arena
+
 <img src="./images/finishline.png" alt="finishline" width="400"/>
+
 Finish line
+
 <img src="./images/gamerunner.png" alt="gamerunner" width="400"/>
+
 Game Runner Agent
+
 <img src="./images/lights.png" alt="lights" width="400"/>
+
 Lights
+
 <img src="./images/lightswitches.png" alt="lightswitches" width="400"/>
+
 Light Switches
+
 <img src="./images/finished.png" alt="finished" width="400"/>
+
 Agent Reached Finish Line
 
 
