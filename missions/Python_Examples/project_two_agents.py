@@ -26,9 +26,12 @@ import _thread
 class RedLightGreenLightGame(gym.Env):
     
     def __init__(self, env_config):
-        self.obs_size = 60
+        self.obs_size = 110
         self.max_episode_steps = 100000000
         self.log_frequency = 10
+        self.xpos = 0
+        self.ypos = 0
+        self.zpos = 0
 
 
         self.action_space = Box(np.array([-1]), np.array([1]))
@@ -70,7 +73,8 @@ class RedLightGreenLightGame(gym.Env):
             self.log_returns()
         
         #get observation
-        self.obs = self.get_observation(world_state)
+        self.obs, self.xpos, self.ypos, self.zpos = self.get_observation(world_state)
+        print("reset called")
 
         return self.obs
     
@@ -89,8 +93,8 @@ class RedLightGreenLightGame(gym.Env):
             #increase time val
             for i in range(10000):
                 self.currVelo += acceleration * 0.0001
-                if self.currVelo < 0:
-                    self.currVelo = 0
+                if self.currVelo < -1:
+                    self.currVelo = -1
                 elif self.currVelo > 1:
                     self.currVelo = 1
                 command1 = f"move {self.currVelo}"
@@ -104,7 +108,9 @@ class RedLightGreenLightGame(gym.Env):
         world_state = self.Game_Player.getWorldState()
         for error in world_state.errors:
             print("Error:", error.text)
-        self.obs = self.get_observation(world_state)
+        self.obs, self.xpos, self.ypos, self.zpos = self.get_observation(world_state)
+
+
 
 
         # Get Done
@@ -136,7 +142,7 @@ class RedLightGreenLightGame(gym.Env):
             # Vik
             # filePath = "\"C:\\Users\\Timothy\\Desktop\\175_test\\redlightgreenlight\\CS175world_new\""
             # filePath = "\"/Users/vikram/Documents/CS175_malmo/MalmoPlatform/Minecraft/run/saves/CS175world_new\""
-            filePath = "\"/home/vikram/Desktop/uci_stuff/fourth_year/CS_175/MalmoPlatform/Minecraft/run/saves/CS175world_new\""
+            filePath = "\"/home/vikram/Desktop/uci_stuff/fourth_year/CS_175/MalmoPlatform/Minecraft/run/saves/CS175world\""
 
             fileWorldGenerator = f"<FileWorldGenerator src ={filePath} />"
 
@@ -178,7 +184,7 @@ class RedLightGreenLightGame(gym.Env):
                 <AgentSection mode="Survival">
                     <Name>CS175_project</Name>
                     <AgentStart>
-                        <Placement x="624.5" y="4" z="825.5" pitch="15" yaw="180"/>
+                        <Placement x="623.5" y="4" z="868.5" pitch="15" yaw="180"/>
                         <Inventory>
                             <InventoryItem slot="0" type="map"/>
                         </Inventory>
@@ -188,8 +194,8 @@ class RedLightGreenLightGame(gym.Env):
                         <ObservationFromRay/>
                         <ObservationFromGrid>
                             <Grid name="floorAll">
-                                <min x="-'''+str(int(30))+'''" y="-1" z="-'''+str(int(60))+'''"/>
-                                <max x="'''+str(int(30))+'''" y="4" z="'''+str(int(0))+'''"/>
+                                <min x="-'''+str(int(55))+'''" y="-1" z="-'''+str(self.obs_size)+'''"/>
+                                <max x="'''+str(int(55))+'''" y="4" z="'''+str(int(0))+'''"/>
                             </Grid>
                         </ObservationFromGrid>
                         <RewardForTouchingBlockType>
@@ -285,7 +291,7 @@ class RedLightGreenLightGame(gym.Env):
     
     def get_observation(self, world_state):
         """
-        Use the agent observation API to get a flattened 5 x 60 x 60 grid around the agent. 
+        Use the agent observation API to get a flattened 5 x self.obs_size x self.obs_size grid around the agent. 
         The agent is in the center square facing up.
 
         Args
@@ -293,10 +299,14 @@ class RedLightGreenLightGame(gym.Env):
 
         Returns
             observation: <np.array> the state observation
+            xpos: float current x coordinate
+            ypos: float current y coordinate
+            zpos: float current z coordinate
         """
 
-        obs = np.zeros((5 * 60 * 60))
+        obs = np.zeros((5 * (self.obs_size ** 2)))
 
+        xpos,ypos,zpos = float("inf"), float("inf"), float("inf")
         while world_state.is_mission_running:
             time.sleep(0.1)
             world_state = self.Game_Player.getWorldState()
@@ -310,8 +320,7 @@ class RedLightGreenLightGame(gym.Env):
 
                 # Get observation
                 grid = observations['floorAll']
-                # print("grid =", len(grid))
-                # print(grid)
+
                 blockTypes = {}
                 for i, x in enumerate(grid):
                     blockTypes[x] = True
@@ -330,9 +339,10 @@ class RedLightGreenLightGame(gym.Env):
                 val = obs[maxIndex]
                 obs[maxIndex] = -2 if val == -1 else 2
                 
+                xpos, ypos, zpos = observations["XPos"], observations["YPos"], observations["ZPos"]
                 break
 
-        return obs
+        return obs, xpos, ypos, zpos
 
     def log_returns(self):
         """
