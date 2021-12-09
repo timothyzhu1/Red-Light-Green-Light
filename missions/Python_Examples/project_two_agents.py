@@ -23,15 +23,21 @@ import random
 
 import _thread
 
+from shutil import copytree
+
 class RedLightGreenLightGame(gym.Env):
     
     def __init__(self, env_config):
+        self.run_number = 0
         self.obs_size = 110
         self.max_episode_steps = 100000000
         self.log_frequency = 10
-        self.xpos = 0
-        self.ypos = 0
-        self.zpos = 0
+        self.xpos = 623.5
+        self.ypos = 4
+        self.zpos = 868.5
+
+        self.lavaDensity = 0.05
+
 
 
         self.action_space = Box(np.array([-1]), np.array([1]))
@@ -74,7 +80,6 @@ class RedLightGreenLightGame(gym.Env):
         
         #get observation
         self.obs, self.xpos, self.ypos, self.zpos = self.get_observation(world_state)
-        print("reset called")
 
         return self.obs
     
@@ -92,9 +97,10 @@ class RedLightGreenLightGame(gym.Env):
         def momentum(acceleration):
             #increase time val
             for i in range(10000):
+                
                 self.currVelo += acceleration * 0.0001
-                if self.currVelo < -1:
-                    self.currVelo = -1
+                if self.currVelo < 0:
+                    self.currVelo = 0
                 elif self.currVelo > 1:
                     self.currVelo = 1
                 command1 = f"move {self.currVelo}"
@@ -108,7 +114,10 @@ class RedLightGreenLightGame(gym.Env):
         world_state = self.Game_Player.getWorldState()
         for error in world_state.errors:
             print("Error:", error.text)
-        self.obs, self.xpos, self.ypos, self.zpos = self.get_observation(world_state)
+        self.obs, xpos, ypos, zpos = self.get_observation(world_state)
+
+        deltaZ = -1 * (zpos - self.zpos)
+        self.xpos, self.ypos, self.zpos = xpos, ypos, zpos
 
 
 
@@ -118,8 +127,9 @@ class RedLightGreenLightGame(gym.Env):
         
         reward = 0
         for r in world_state.rewards:
-            reward += r.getValue()
+            reward += r.getValue()  
         self.episode_return += reward
+        self.episode_return += deltaZ
 
 
         if (len(np.argwhere(self.obs == 2)) >= 1) and self.currVelo != 0:
@@ -142,23 +152,36 @@ class RedLightGreenLightGame(gym.Env):
             # Vik
             # filePath = "\"C:\\Users\\Timothy\\Desktop\\175_test\\redlightgreenlight\\CS175world_new\""
             # filePath = "\"/Users/vikram/Documents/CS175_malmo/MalmoPlatform/Minecraft/run/saves/CS175world_new\""
-            filePath = "\"/home/vikram/Desktop/uci_stuff/fourth_year/CS_175/MalmoPlatform/Minecraft/run/saves/CS175world\""
+            filePath = "/home/vikram/Desktop/uci_stuff/fourth_year/CS_175/MalmoPlatform/Minecraft/run/saves/CS175world"
+            target = "/home/vikram/Desktop/uci_stuff/fourth_year/CS_175/MalmoPlatform/Malmo/samples/Python_examples/Red-Light-Green-Light/missions/Python_Examples/world/world_" + str(self.run_number)
+            self.run_number += 1
+            copytree(filePath, target)
+            target = '"' + target + '"'
 
-            fileWorldGenerator = f"<FileWorldGenerator src ={filePath} />"
+            fileWorldGenerator = f"<FileWorldGenerator src ={target} />"
 
             return fileWorldGenerator
+        
+        # def populateObstacles():
+        #     retString = ""
+        #     for x in range(592, 654):
+        #         for z in range(777, 871):
+        #             if random.random() < self.lavaDensity:
+        #                 retString += f"<DrawBlock x='{x}'  y='3' z='{z}' type='lava' />\n"
+        #     return retString
 
 
-        def get_all_movement_reward_locations():
-            out = "<RewardForReachingPosition>"
-            i = 826.5
-            while (i >= 777.5):
-                out +=  '''
-                            <Marker x="624.5" y="4" z="''' + str(i) + '''" reward = "1" tolerance="0.25" />
-                        '''
-                i -= 1
-            out += '\n</RewardForReachingPosition>'
-            return out
+
+        # def get_all_movement_reward_locations():
+        #     out = "<RewardForReachingPosition>"
+        #     i = 826.5
+        #     while (i >= 777.5):
+        #         out +=  '''
+        #                     <Marker x="624.5" y="4" z="''' + str(i) + '''" reward = "1" tolerance="0.25" />
+        #                 '''
+        #         i -= 1
+        #     out += '\n</RewardForReachingPosition>'
+        #     return out
         
         return '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
             <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -199,9 +222,9 @@ class RedLightGreenLightGame(gym.Env):
                             </Grid>
                         </ObservationFromGrid>
                         <RewardForTouchingBlockType>
-                            <Block reward="100" type="iron_block" /> 
-                        </RewardForTouchingBlockType>''' \
-                        + get_all_movement_reward_locations() + '''
+                            <Block reward="100" type="iron_block" />
+                            <Block reward="-1" type="lava"/> 
+                        </RewardForTouchingBlockType>
                         <AgentQuitFromTouchingBlockType>
                             <Block type="iron_block" />
                         </AgentQuitFromTouchingBlockType>
@@ -287,6 +310,7 @@ class RedLightGreenLightGame(gym.Env):
         _thread.start_new_thread(self.game_runner_threaded, (self.Game_Runner, self.Game_Player))
 
         world_state = self.Game_Player.getWorldState()
+        
         return world_state
     
     def get_observation(self, world_state):
@@ -359,9 +383,9 @@ class RedLightGreenLightGame(gym.Env):
         plt.title('Red Light Green Light Game')
         plt.ylabel('Return')
         plt.xlabel('Steps')
-        plt.savefig('returns_impala_tf_1.png')
+        plt.savefig('returns_ppo_final_torch.png')
 
-        with open('returns_impala_tf_1.txt', 'w') as f:
+        with open('returns_ppo_final_torch.txt', 'w') as f:
             for step, value in zip(self.steps[1:], self.returns[1:]):
                 f.write("{}\t{}\n".format(step, value)) 
 
@@ -373,19 +397,19 @@ if __name__ == '__main__':
     #     'num_gpus': 0,              # We aren't using GPUs
     #     'num_workers': 0            # We aren't using parallelism
     # })
-    trainer_impala = impala.ImpalaTrainer(env=RedLightGreenLightGame, config={
+    # trainer_impala = impala.ImpalaTrainer(env=RedLightGreenLightGame, config={
+    #     'env_config': {},           # No environment parameters to configure
+    #     'framework': 'tf',       # Use pyotrch instead of tensorflow
+    #     'num_gpus': 0,              # We aren't using GPUs
+    #     'num_workers': 0            # We aren't using parallelism
+    # })
+    trainer = ppo.PPOTrainer(env=RedLightGreenLightGame, config={
         'env_config': {},           # No environment parameters to configure
-        'framework': 'tf',       # Use pyotrch instead of tensorflow
+        'framework': 'torch',       # Use pyotrch instead of tensorflow
         'num_gpus': 0,              # We aren't using GPUs
         'num_workers': 0            # We aren't using parallelism
     })
-    # trainer = ppo.PPOTrainer(env=RedLightGreenLightGame, config={
-    #     'env_config': {},           # No environment parameters to configure
-    #     'framework': 'torch',       # Use pyotrch instead of tensorflow
-    #     'num_gpus': 1,              # We aren't using GPUs
-    #     'num_workers': 0            # We aren't using parallelism
-    # })
 
     while True:
-        print(trainer_impala.train())
+        print(trainer.train())
         
