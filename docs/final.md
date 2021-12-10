@@ -37,15 +37,16 @@ The second area to determine the agent's success is the win and fail conditions.
 Our first approach is the baseline approach. The agent is constricted to one degree of freedom, as opposed to the more general two degrees of freedom listed above. This allows us to have a baseline test with minimal variables; the agent can move forwards or stop. Running this test will enable us to understand how introducing new variables, such as backwards movement and lava pits, affect the agent's success. This approach might need less data and be more accurate as there are less areas for failure for the agent. In this approach we kept the world loading the same in each iteration. We also cap the lower bound of velocity to 0 initially, to ensure that the agent is either stationary or moving in the positive direction.
 
 Lastly this approach calculates the reward for movement through XML, using the XML block type: RewardForReachingPosition. The below code writes XML code for the entire play space, giving a reward of 1 for each row of blocks it passes through.
+```
 def get_all_movement_reward_locations():
-            out = ""
-            i = 826.5
-            while (i >= 777.5):
-                out += f"<RewardForReachingPosition> <Marker x='624.5' y='4' z='{i}'/> </RewardForReachingPosition>"
-                i -= 3
+    out = ""
+    i = 826.5
+    while (i >= 777.5):
+        out += f"<RewardForReachingPosition> <Marker x='624.5' y='4' z='{i}'/> </RewardForReachingPosition>"
+        i -= 3
 
-            return out
-
+    return out
+```
 
 In our next approach the agent is given the ability to move backwards. The addition of this ability does not help the agent, however it is now a new variable that the agent must contend with. The lower bound of the velocity is now -1.0 instead of 0. This approach may be less accurate, but the agent must learn directional movement. The reward and penalty for movement in this approach is through taking the difference of the agents position on the z-axis instead of through XML
 
