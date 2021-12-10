@@ -91,16 +91,9 @@ While the trend is still somewhat inconsistent, the peaks are still increasing i
  
 <img src="./images_final/returns_ppo_lava_tf.png" alt="impala1" width="400"/>
 
-
-
 PPO Algorithm; Forward and Backward Movement and Strafing with Lava Pits 
 
-
-Description of plots:
-    - The results of this approach...
-    - from the graph and watching the agent train, it is shown that the agent can only learn one or the other: moving aound the lava or not moving while the last light is on. The agent struggles when both are variables
-
- 
+In this approach, there seems to be no learning happening in terms of the overall problem (quantitatively). However from out visual observations of the run (qualitatively), we could see that agent was understanding that it should avoid the lava, but it was not able to figure out when to stop moving according to the state of the lights.
 
 
 ## References
