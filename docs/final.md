@@ -6,8 +6,8 @@ title: Final Report
 
 
 ## Video
-[FIXME: THIS IS THE OLD VIDEO]
-<iframe width="560" height="315" src="https://www.youtube.com/embed/UDfAS55aF24" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/oafK1x6-IwA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 
 
@@ -26,17 +26,13 @@ We have also included obstacles throughout the arena to add further challenges t
 
 ## Approaches
 
-Experimented with timing but the agent wasnt performing well. The model was too complex and the number of parameters became overwhelming for our agent to learn.
-approaches
+Within our model, the agent generally has two degrees of freedom for movement: forward and backward, as well as side to side strafing. The agent's performance and learning is based on the decisions it makes. Two key areas determine the agent's success and failure. The first area is the distance moved forward, where the agent is rewarded for each row of blocks that it moves forward and penalized for each row of blocks that it moves backward. The rewards for this are +1 and -1 respectively. Horizontal strafing is also enabled, to present the agent with the ability to avoid the lava pits. 
+The second area to determine the agent's success is the win and fail conditions. The win condition is if the agent reaches the iron row at the back of the arena, which represents the finish line. Should the agent succeed, it is given a +100 reward, in addition to the movement reward. The fail condition is if the agent moves while the last light is turned on, and it is given a -10 penalty.
 
-
-Generally the agent has 2 degrees of freedom in terms of movement: forwards and backwards, as well as side to side strafing. The agent's performance and learning is based on the decisions it makes. Two key areas determine the agent's success and failure. The distance moved forward is one area, where the agent is rewarded for each ‘row of blocks’ that it moves forwards and penalized for each ‘row of blocks’ that it moves backwards. The rewards for this are +1 and -1 respectively. Side to side strafing is also enabled, to present the agent with the ability to move away from the lava pits. 
-The second area to determine the agent's success is the win and fail conditions. The win condition is if the agent reaches the iron row at the back of the arena. Should the agent succeed, it is awarded with +100 in addition to the movement reward. The fail condition is if the agent moves while the last light is turned on, and it is given a -10 penalty.
-
-
-Our first approach is the baseline approach. The agent is constricted to one degree of freedom, as opposed to the more general two degrees of freedom listed above. This allows us to have a baseline test with minimal variables; the agent can move forwards or stop. Running this test will enable us to understand how introducing new variables, such as backwards movement and lava pits, affect the agent's success. This approach might need less data and be more accurate as there are less areas for failure for the agent. In this approach we kept the world loading the same in each iteration. We also cap the lower bound of velocity to 0 initially, to ensure that the agent is either stationary or moving in the positive direction.
+Our first approach is the baseline approach. The agent is constricted to one degree of freedom, as opposed to the more general two degrees of freedom described above. This allows us to have a baseline test with minimal variables; the agent can move forward or stop. Running this test will enable us to understand how introducing new variables, such as backwards movement and lava pits, affect the agent's success. This approach might need less data and be more accurate, as there are fewer ways for the agent to fail. In this approach we kept the world loading the same in each iteration. We also limit the lower bound of velocity to 0 initially, to ensure that the agent is either stationary or moving in the positive direction.
 
 Lastly this approach calculates the reward for movement through XML, using the XML block type: RewardForReachingPosition. The below code writes XML code for the entire play space, giving a reward of 1 for each row of blocks it passes through.
+
 ```
 def get_all_movement_reward_locations():
     out = ""
@@ -48,9 +44,27 @@ def get_all_movement_reward_locations():
     return out
 ```
 
-In our next approach the agent is given the ability to move backwards. The addition of this ability does not help the agent, however it is now a new variable that the agent must contend with. The lower bound of the velocity is now -1.0 instead of 0. This approach may be less accurate, but the agent must learn directional movement. The reward and penalty for movement in this approach is through taking the difference of the agents position on the z-axis instead of through XML
+In our next approach the agent is given the ability to move backward. The addition of this ability does not help the agent, however it is now a new variable that the agent must contend with. The lower bound of the velocity is now -1.0 instead of 0. This approach may be less accurate, but the agent must learn directional movement. The reward and penalty for movement in this approach is through taking the difference of the agents position on the z-axis instead of through XML
 
-The last approach includes strafing and obstacles. The environment now has lava first randomly generated for each run. The agent will die if it falls into the lava (reward of -1), and is given a negative reward. Additionally, the agent is given the ability to strafe right or left (but not turn). In order to enable these functionalities we had to use a new technique when loading the world. In previous approaches, our world was loaded from a custom file. However, to add custom lava pits, we had to utilize XML, which does not work with a custom world as the lava persists between restarts. Therefore, for each iteration, we copied the world into a different directory and loaded this copied world.  This would allows us to change the world and add lava pits without modifying the original. add code for loading
+The last approach includes strafing and obstacles. The environment now has lava randomly populated in the arena before each run. The agent will die if it falls into the lava (reward of -1), and is given a negative reward. Additionally, the agent is given the ability to strafe right or left (but not turn). In order to enable these functionalities we had to use a new technique when loading the world. In previous approaches, our world was loaded from a custom file. However, to add custom lava pits, we had to utilize XML, which does not work with a custom world as the lava persists between restarts. Therefore, for each iteration, we copied the world into a different directory and loaded this copied world.  This would allow us to change the world and add lava pits without modifying the original. 
+
+```
+filePath = "/home/vikram/Desktop/uci_stuff/fourth_year/CS_175/MalmoPlatform/Minecraft/run/saves/CS175world_new_lava"
+            target = "/home/vikram/Desktop/uci_stuff/fourth_year/CS_175/MalmoPlatform/Malmo/samples/Python_examples/Red-Light-Green-Light/missions/Python_Examples/world_lava/world_" + str(self.run_number)
+            self.run_number += 1
+            copytree(filePath, target)
+            target = '"' + target + '"'
+
+            fileWorldGenerator = f"<FileWorldGenerator src ={target} />"
+
+            return fileWorldGenerator
+```
+
+Experimented with timing but the agent wasnt performing well. The model was too complex and the number of parameters became overwhelming for our agent to learn.
+approaches.
+
+Finally, we also experimented with timing in our model. Our goal was to judge the agent's performance, based on how efficiently it can reach the finish line. Specifically, we will give the agent a higher reward for completing the arena in a smaller amount of time. While this seemed to be a great way to improve our agent's abililty to traverse the arena, we quickly realized that the complexity of this feature may be overwhelming. Especially with the addition of lava obstacles, our agent would have to deal with far too many variables, making our training algorithms ineffective. For this reason, we chose to omit this level of timing performance.
+
 
 
 ## Evaluation
@@ -64,14 +78,24 @@ Our qualitative evaluation of the agent’s performance is based on similar prin
 Below are plots of our agent’s performance across numerous rounds of training and with various learning algorithms and environments:
  
 <img src="./images_final/returns_ppo_final_tf.png" alt="impala1" width="400"/>
+
 PPO Algorithm; Forward Movement Only Without Lava Pits
- 
+
+In this plot, we can see that the peak is increasing steadily, as the number steps increases. 
+
 <img src="./images_final/returns_impala_final_tf.png" alt="impala1" width="400"/> 
+
 IMAPALA Algorithm; Forward and Backward Movement Without Lava Pits
+
+While the trend is still somewhat inconsistent, the peaks are still increasing in this plot.
  
 <img src="./images_final/returns_ppo_lava_tf.png" alt="impala1" width="400"/>
+
+
+
 PPO Algorithm; Forward and Backward Movement and Strafing with Lava Pits 
- 
+
+
 Description of plots:
     - The results of this approach...
     - from the graph and watching the agent train, it is shown that the agent can only learn one or the other: moving aound the lava or not moving while the last light is on. The agent struggles when both are variables
